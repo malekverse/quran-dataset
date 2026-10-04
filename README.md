@@ -1,18 +1,23 @@
 # 📘 Qur'an Dataset (JSON & CSV)
 
-A comprehensive, structured, and open dataset of the **Holy Qur'an**, formatted in both **JSON** and **CSV** for easy use in development, research, and analysis.  
-Each record represents a single **ayah (verse)**, enriched with metadata such as surah details, Arabic and English text, and structural divisions (juz, hizb, manzil, etc.).
+A structured dataset of the **Holy Qur'an** in **JSON** and **CSV**, for development, research and analysis.
+Each record is one **ayah (verse)** with its Arabic text (Uthmani script, Hafs 'an 'Asim), an English translation, and structural metadata (juz, hizb quarter, manzil, ruku, sajdah).
+
+> **Version 1.1 (2026-10-04): corrected release.** Version 1.0 contained every ayah twice and several data errors.
+> All of them are fixed and the dataset is now checked automatically. See [Corrections](#-corrections-in-v11) and [CHANGELOG.md](CHANGELOG.md).
+> Jazakum Allahu khayran to everyone who reported problems.
 
 ---
 
 ## 🧾 Dataset Files
 
 | File | Format | Description |
-|------|---------|-------------|
-| `quran_dataset.json` | JSON | Full Qur'an dataset in hierarchical format |
-| `quran_dataset.csv` | CSV | Same dataset in tabular format for easy analysis |
+|------|--------|-------------|
+| `quran_dataset.json` | JSON | Array of 6,236 ayah records |
+| `quran_dataset.csv` | CSV | The same 6,236 records, one row per ayah (UTF-8) |
+| `scripts/validate.py` | Python | Integrity checks; run `python scripts/validate.py` |
 
-Both files contain **6,236 ayahs** from all **114 surahs**.
+Both files contain exactly **6,236 ayahs** from all **114 surahs** (77,430 words).
 
 ---
 
@@ -40,7 +45,7 @@ Example record:
   "sajah_ayah": false,
   "sajdah_no": "NA",
   "no_of_word_ayah": 4,
-  "list_of_words": ["بِسْمِ", "ٱللَّهِ", "ٱلرَّحْمَٰنِ", "ٱلرَّحِيمِ"]
+  "list_of_words": "[بِسْمِ,ٱللَّهِ,ٱلرَّحْمَٰنِ,ٱلرَّحِيمِ]"
 }
 ```
 
@@ -50,36 +55,33 @@ Example record:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `_id` | Object | MongoDB-style unique ID (can be ignored for most use cases) |
-| `surah_no` | Integer | Surah (chapter) number (1–114) |
+| `_id` | Object | MongoDB-style ID left over from the original export; safe to ignore |
+| `surah_no` | Integer | Surah number (1–114) |
 | `surah_name_en` | String | Surah name in English |
 | `surah_name_ar` | String | Surah name in Arabic |
-| `surah_name_roman` | String | Surah name transliteration (Latin script) |
-| `ayah_no_surah` | Integer | Verse number within the surah |
-| `ayah_no_quran` | Integer | Global verse number (1–6236) |
-| `ayah_ar` | String | Ayah text in Arabic (Uthmani script) |
-| `ayah_en` | String | English translation |
-| `ruko_no` | Integer | Ruko section number |
+| `surah_name_roman` | String | Surah name in Latin transliteration |
+| `ayah_no_surah` | Integer | Ayah number within the surah |
+| `ayah_no_quran` | Integer | Ayah number across the whole Qur'an (1–6236) |
+| `ayah_ar` | String | Arabic text, Uthmani script, including pause marks (e.g. ۚ ۖ ۗ) |
+| `ayah_en` | String | English translation (The Clear Quran, see [Sources](#-sources-and-credits)) |
+| `ruko_no` | Integer | Ruku number (1–556, Tanzil numbering) |
 | `juz_no` | Integer | Juz number (1–30) |
-| `manzil_no` | Integer | Manzil division (1–7) |
-| `hizb_quarter` | Integer | Quarter-hizb index (1–240) |
-| `total_ayah_surah` | Integer | Total number of ayahs in this surah |
-| `total_ayah_quran` | Integer | Total ayahs in the Qur'an (6236) |
-| `place_of_revelation` | String | "Meccan" or "Madinan" |
-| `sajah_ayah` | Boolean | Indicates whether the ayah includes a sajdah (prostration) |
-| `sajdah_no` | String/Integer | Sajdah number if applicable, else "NA" |
-| `no_of_word_ayah` | Integer | Number of words in the ayah |
-| `list_of_words` | Array[String] | Individual Arabic words as an array |
+| `manzil_no` | Integer | Manzil number (1–7) |
+| `hizb_quarter` | Integer | Rub' al-hizb (quarter-hizb) number (1–240) |
+| `total_ayah_surah` | Integer | Number of ayahs in the surah |
+| `total_ayah_quran` | Integer | Number of ayahs in the Qur'an (always 6236) |
+| `place_of_revelation` | String | `"Meccan"` or `"Medinan"` |
+| `sajah_ayah` | Boolean | `true` if the ayah is a place of prostration (sajdah) |
+| `sajdah_no` | Integer / String | Sajdah number (1–15) if applicable, otherwise `"NA"` |
+| `no_of_word_ayah` | Integer | Number of words in the ayah. Pause and section marks (ۚ ۖ ۗ ۙ ۛ ۘ ۜ ۞ ۩) are not counted as words. |
+| `list_of_words` | String | The ayah's words as a bracketed, comma-separated string, e.g. `"[بِسْمِ,ٱللَّهِ]"`. See the parsing example below. |
 
----
+### Conventions worth knowing
 
-## 🕌 Applications
-
-- 📱 Mobile or web Qur'an applications
-- 🧠 Linguistic and semantic analysis
-- 🕋 Arabic NLP and text processing
-- 📊 Data visualization or AI training
-- 🧕 Educational / memorization tools
+- **Basmala.** The Basmala is ayah 1 of Al-Fatihah only. For every other surah it is not part of the ayah text, so display it separately if your app shows it above each surah (except At-Tawbah).
+- **Sajdah.** 15 places of prostration are marked, following the Madinah Mushaf. This includes **22:77**, which some schools (e.g. the Hanafi school) do not count; filter it out if you follow the 14-sajdah view.
+- **Ruku.** `ruko_no` follows the Tanzil numbering (556 rukus). Some printed Mushafs and sites use a slightly different division.
+- **Spelling.** The Uthmani orthography follows the Tanzil edition. Other Uthmani encodings (e.g. Quran.com) write a few words differently, such as `بَعْدَمَا` / `بَعْدَ مَا` (2:181, 8:6, 13:37) and `يَٰصَىٰحِبَىِ` / `يَـٰصَـٰحِبَىِ` (12:39, 12:41), and may omit the small iqlab meem signs (ۢ ۭ). These are encoding variants, not textual differences.
 
 ---
 
@@ -90,14 +92,15 @@ Example record:
 import json
 import pandas as pd
 
-# Load JSON
-with open("quran_dataset.json", "r", encoding="utf-8") as f:
+with open("quran_dataset.json", encoding="utf-8") as f:
     quran = json.load(f)
 
-print(quran[0]["ayah_ar"])  # Prints first ayah in Arabic
+print(quran[0]["ayah_ar"])  # first ayah in Arabic
 
-# Load CSV
-df = pd.read_csv("quran_dataset.csv")
+# list_of_words is stored as a string: turn it into a real list
+words = quran[0]["list_of_words"].strip("[]").split(",")
+
+df = pd.read_csv("quran_dataset.csv", encoding="utf-8")
 print(df.head())
 ```
 
@@ -105,92 +108,83 @@ print(df.head())
 ```javascript
 import fs from "fs";
 
-// Read JSON file
 const data = JSON.parse(fs.readFileSync("quran_dataset.json", "utf8"));
 console.log(data[0].ayah_en);
+
+const words = data[0].list_of_words.slice(1, -1).split(",");
 ```
 
-### Example Query (Python)
+### Example query (Python)
 ```python
-# Get all ayahs from Surah Al-Fatihah
-fatihah = [a for a in quran if a["surah_no"] == 1]
-for ayah in fatihah:
+# All ayahs of Surah Al-Fatihah
+for ayah in (a for a in quran if a["surah_no"] == 1):
     print(ayah["ayah_no_surah"], ayah["ayah_en"])
 ```
 
 ---
 
-## 🗂️ Repository Structure
-```
-quran-dataset/
-├── quran_dataset.json
-├── quran_dataset.csv
-├── README.md
-├── LICENSE
-└── CHANGELOG.md   (optional)
-```
+## ✅ Verification
+
+The data is checked in two ways:
+
+1. **`scripts/validate.py`** (run it after any change): 6,236 unique ayahs in Mushaf order, correct ayah count for each of the 114 surahs, no Basmala prefixed to any ayah except 1:1, word lists and counts consistent with the Arabic text (77,430 words), no missing or copied translations, and CSV identical to JSON.
+2. **Cross-check against Quran.com (Quran Foundation API) on 2026-10-04**, verse by verse:
+   - Arabic text: identical for all 6,236 ayahs once encoding differences are normalised (tatweel, iqlab meem signs, hamza and small-yeh code points). The only remaining differences are the five spelling variants listed above.
+   - `juz_no`, `manzil_no`, `hizb_quarter`, `total_ayah_surah`, `place_of_revelation`, `surah_name_ar`: identical for every ayah.
+
+If you find a problem, please [open an issue](https://github.com/malekverse/quran-dataset/issues) with the surah and ayah number.
 
 ---
 
-## 🧭 Future Improvements
+## 🛠 Corrections in v1.1
 
-- [ ] Add surah summaries (`surahs_summary.json`)
-- [ ] Provide multiple translations (English, Urdu, French, etc.)
-- [ ] Include SQLite / Parquet versions for analysis
-- [ ] Add Jupyter notebooks with usage examples
-- [ ] Build a small REST API to query verses dynamically
+| Problem in v1.0 | Fix |
+|---|---|
+| The whole dataset was included **twice** (12,472 records instead of 6,236) | Duplicate copy removed |
+| **95:1** and **97:1** began with the Basmala (written `بِّسْمِ`), which is not part of these ayahs | Basmala removed from both ayahs |
+| **114:6** had the word list and word count of 114:5 | Rebuilt from the ayah text |
+| Word lists and counts treated pause marks (ۚ ۖ ۗ ۞ ۩ …) as words, in 2,719 ayahs | Rebuilt for all ayahs; pause marks are no longer counted |
+| **5:103** English was a copy of 5:102 | Replaced with the correct translation of 5:103 |
+| **15:49** `hizb_quarter` was 105 | Corrected to 106 (start of that quarter) |
+| Surah 114 English name was "The Mankind" | "Mankind" |
+| 131 English ayahs had double spaces | Whitespace normalised |
 
 ---
+
+## 📚 Sources and credits
+
+- **Arabic text:** Uthmani script, Hafs 'an 'Asim, in the orthography of the [Tanzil Project](https://tanzil.net). Tanzil's text may be copied and redistributed **verbatim** with a link back to tanzil.net; do not alter the Qur'anic text.
+- **English translation:** *The Clear Quran* by Dr. Mustafa Khattab. © Dr. Mustafa Khattab / Furqaan Institute of Quranic Education. It is included here for reference with full credit. If you plan commercial use or redistribution of the translation, check the publisher's terms at [theclearquran.org](https://theclearquran.org).
+- **Verification reference:** [Quran.com / Quran Foundation API](https://api-docs.quran.foundation).
 
 ## 📜 License
 
-This dataset is distributed under the **Creative Commons Attribution 4.0 International (CC BY 4.0)** license.
-
-**You are free to:**
-- **Share** — copy and redistribute the material in any medium or format
-- **Adapt** — remix, transform, and build upon the material for any purpose
-
-**Under the following terms:**
-- **Attribution** — You must give appropriate credit and link to this repository.
-- **No additional restrictions** — You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
-
-⚠️ **Note:** If your dataset includes a specific translation (e.g., Saheeh International, Pickthall, Yusuf Ali, etc.), please ensure redistribution rights are respected and credit the original translators.
+- The **structure, metadata and tooling** of this repository (field layout, numbering, scripts, documentation) are released under **CC BY 4.0**. Please credit and link this repository.
+- The **Arabic Qur'anic text** and the **English translation** keep the terms of their sources listed above. CC BY 4.0 does not override them.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome!  
-If you'd like to improve data accuracy, add translations, or enhance formatting:
+Corrections and improvements are welcome:
 
-1. Fork this repository
-2. Create a branch for your update (`git checkout -b update-data`)
-3. Commit your changes (`git commit -m "Added Urdu translation"`)
-4. Push to your fork and submit a Pull Request
+1. Fork the repository and create a branch.
+2. Make your change and run `python scripts/validate.py`. It must pass.
+3. Open a Pull Request that names the affected surah and ayah numbers and the reference you used.
 
----
-
-## 🌙 Acknowledgements
-
-- **Arabic text:** Verified Qur'anic text (Uthmani script)
-- **English translation:** [Add your source here, e.g., Saheeh International]
-- **Data structure design:** Inspired by open-source Qur'an projects and linguistic research
+Changes to the Arabic text must be backed by a recognised Mushaf or by the Tanzil text.
 
 ---
 
-## 💬 Contact
+## 🧭 Possible future improvements
 
-If you use this dataset in your project, research, or publication, please credit this repository and share your work — it encourages future development.
-
-> *"The best among you are those who learn the Qur'an and teach it."* — Prophet Muhammad ﷺ
+- [ ] `list_of_words` as a real JSON array (in a new major version, to avoid breaking existing users)
+- [ ] Additional translations with clear licensing (e.g. public-domain Pickthall)
+- [ ] Surah-level summary file
+- [ ] SQLite / Parquet exports
 
 ---
 
-## ⭐ Support
+> *"The best among you are those who learn the Qur'an and teach it."* (Sahih al-Bukhari 5027)
 
-If you find this dataset useful, please consider:
-- ⭐ **Starring** this repository
-- 🔗 **Sharing** it with others
-- 🤝 **Contributing** improvements or translations
-
-**[Download Dataset](https://github.com/yourusername/quran-dataset)** | **[Report Issues](https://github.com/yourusername/quran-dataset/issues)** | **[Request Features](https://github.com/yourusername/quran-dataset/discussions)**
+**[Download](https://github.com/malekverse/quran-dataset)** · **[Report an issue](https://github.com/malekverse/quran-dataset/issues)**
