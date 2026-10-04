@@ -81,10 +81,15 @@ def main():
     check(total_words == EXPECTED_WORDS, f"{EXPECTED_WORDS} words in total (found {total_words})")
 
     check(all(r["ayah_en"].strip() for r in rows), "every ayah has an English translation")
+    # Pickthall translates 102:3 and 102:4 identically ("Nay, but ye will come to know!");
+    # that is the translator's own wording, not a data error.
+    same_wording_by_translator = {(102, 4)}
     copied = [
         f"{b['surah_no']}:{b['ayah_no_surah']}"
         for a, b in zip(rows, rows[1:])
-        if a["ayah_en"] == b["ayah_en"] and a["ayah_ar"] != b["ayah_ar"]
+        if a["ayah_en"] == b["ayah_en"]
+        and a["ayah_ar"] != b["ayah_ar"]
+        and (b["surah_no"], b["ayah_no_surah"]) not in same_wording_by_translator
     ]
     check(not copied, f"no translation copied from the previous ayah {copied or ''}")
 

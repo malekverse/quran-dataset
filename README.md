@@ -1,9 +1,9 @@
 # 📘 Qur'an Dataset (JSON & CSV)
 
 A structured dataset of the **Holy Qur'an** in **JSON** and **CSV**, for development, research and analysis.
-Each record is one **ayah (verse)** with its Arabic text (Uthmani script, Hafs 'an 'Asim), an English translation, and structural metadata (juz, hizb quarter, manzil, ruku, sajdah).
+Each record is one **ayah (verse)** with its Arabic text (Uthmani script, Hafs 'an 'Asim), the public-domain English translation by Marmaduke Pickthall, and structural metadata (juz, hizb quarter, manzil, ruku, sajdah).
 
-> **Version 1.1 (2026-10-04): corrected release.** Version 1.0 contained every ayah twice and several data errors.
+> **Version 1.2 (2026-10-04): corrected release.** Version 1.0 contained every ayah twice and several data errors.
 > All of them are fixed and the dataset is now checked automatically. See [Corrections](#-corrections-in-v11) and [CHANGELOG.md](CHANGELOG.md).
 > Jazakum Allahu khayran to everyone who reported problems.
 
@@ -34,7 +34,7 @@ Example record:
   "ayah_no_surah": 1,
   "ayah_no_quran": 1,
   "ayah_ar": "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
-  "ayah_en": "In the Name of Allah—the Most Compassionate, Most Merciful.",
+  "ayah_en": "In the name of Allah, the Beneficent, the Merciful.",
   "ruko_no": 1,
   "juz_no": 1,
   "manzil_no": 1,
@@ -63,7 +63,7 @@ Example record:
 | `ayah_no_surah` | Integer | Ayah number within the surah |
 | `ayah_no_quran` | Integer | Ayah number across the whole Qur'an (1–6236) |
 | `ayah_ar` | String | Arabic text, Uthmani script, including pause marks (e.g. ۚ ۖ ۗ) |
-| `ayah_en` | String | English translation (The Clear Quran, see [Sources](#-sources-and-credits)) |
+| `ayah_en` | String | English translation by Marmaduke Pickthall (1930, public domain), see [Sources](#-sources-and-credits) |
 | `ruko_no` | Integer | Ruku number (1–556, Tanzil numbering) |
 | `juz_no` | Integer | Juz number (1–30) |
 | `manzil_no` | Integer | Manzil number (1–7) |
@@ -131,6 +131,7 @@ The data is checked in two ways:
 2. **Cross-check against Quran.com (Quran Foundation API) on 2026-10-04**, verse by verse:
    - Arabic text: identical for all 6,236 ayahs once encoding differences are normalised (tatweel, iqlab meem signs, hamza and small-yeh code points). The only remaining differences are the five spelling variants listed above.
    - `juz_no`, `manzil_no`, `hizb_quarter`, `total_ayah_surah`, `place_of_revelation`, `surah_name_ar`: identical for every ayah.
+   - English: Pickthall's translation as published by Quran.com, aligned verse by verse (spot-checked at 1:1, 1:7, 2:255, 112:1, 114:6).
 
 If you find a problem, please [open an issue](https://github.com/malekverse/quran-dataset/issues) with the surah and ayah number.
 
@@ -148,19 +149,20 @@ If you find a problem, please [open an issue](https://github.com/malekverse/qura
 | **15:49** `hizb_quarter` was 105 | Corrected to 106 (start of that quarter) |
 | Surah 114 English name was "The Mankind" | "Mankind" |
 | 131 English ayahs had double spaces | Whitespace normalised |
+| *(v1.2)* English translation was the copyrighted *The Clear Quran* | Replaced with Pickthall's public-domain translation |
 
 ---
 
 ## 📚 Sources and credits
 
 - **Arabic text:** Uthmani script, Hafs 'an 'Asim, in the orthography of the [Tanzil Project](https://tanzil.net). Tanzil's text may be copied and redistributed **verbatim** with a link back to tanzil.net; do not alter the Qur'anic text.
-- **English translation:** *The Clear Quran* by Dr. Mustafa Khattab. © Dr. Mustafa Khattab / Furqaan Institute of Quranic Education. It is included here for reference with full credit. If you plan commercial use or redistribution of the translation, check the publisher's terms at [theclearquran.org](https://theclearquran.org).
+- **English translation:** *The Meaning of the Glorious Koran* by Mohammed Marmaduke Pickthall (1930), public domain. Text as published by [Quran.com](https://quran.com) (translation 19). Its archaic English ("ye", "Thou") is the translator's own and is kept verbatim. Versions 1.0–1.1 used *The Clear Quran* (© Dr. Mustafa Khattab), which was replaced in 1.2 because it is copyrighted.
 - **Verification reference:** [Quran.com / Quran Foundation API](https://api-docs.quran.foundation).
 
 ## 📜 License
 
 - The **structure, metadata and tooling** of this repository (field layout, numbering, scripts, documentation) are released under **CC BY 4.0**. Please credit and link this repository.
-- The **Arabic Qur'anic text** and the **English translation** keep the terms of their sources listed above. CC BY 4.0 does not override them.
+- The **Arabic Qur'anic text** keeps the Tanzil terms above (verbatim copies, with a link to tanzil.net). The **English translation** is in the public domain.
 
 ---
 
@@ -179,7 +181,7 @@ Changes to the Arabic text must be backed by a recognised Mushaf or by the Tanzi
 ## 🧭 Possible future improvements
 
 - [ ] `list_of_words` as a real JSON array (in a new major version, to avoid breaking existing users)
-- [ ] Additional translations with clear licensing (e.g. public-domain Pickthall)
+- [ ] Additional translations with clear licensing
 - [ ] Surah-level summary file
 - [ ] SQLite / Parquet exports
 

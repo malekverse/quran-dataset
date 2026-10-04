@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2 (2026-10-04)
+
+### Changed
+- `ayah_en` is now Marmaduke Pickthall's translation (1930, public domain), replacing *The Clear Quran* (© Dr. Mustafa Khattab), which is copyrighted, so that the whole dataset can be freely redistributed. Field names and format are unchanged.
+- `scripts/validate.py`: Pickthall renders 102:3 and 102:4 identically; this is allowed as the translator's own wording.
+
 ## 1.1 (2026-10-04)
 
 Corrected release. The record schema is unchanged, so existing code keeps working.
